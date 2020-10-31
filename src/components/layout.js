@@ -2,14 +2,17 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'gatsby';
 import { AboutModal } from './modal';
 import { rhythm, scale } from '../utils/typography';
-import { Divider } from 'semantic-ui-react';
+import { Divider, Card } from 'semantic-ui-react';
 import GitHubButton from 'react-github-btn';
+import { clearAllPersistedAnswer } from '../utils/persistAnswers';
 import {
   shouldRenderContributor,
   shuffle
 } from '../utils/shouldRenderContributor';
+import { LearnMore } from './learn-more';
 
 const Layout = props => {
+  const [loading, stopLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [contributors, setContributors] = useState([]);
   const headerRef = useRef();
@@ -30,6 +33,7 @@ const Layout = props => {
             )
           )
         );
+        stopLoading(false);
       })
       .catch(err => console.error(err));
   }, []);
@@ -63,24 +67,7 @@ const Layout = props => {
       </h1>
     );
   } else {
-    header = (
-      <h3
-        style={{
-          marginTop: 0
-        }}
-      >
-        <Link
-          style={{
-            boxShadow: `none`,
-            textDecoration: `none`,
-            color: `inherit`
-          }}
-          to={`/`}
-        >
-          {title}
-        </Link>
-      </h3>
-    );
+    header = null;
   }
   return (
     <div
@@ -91,11 +78,94 @@ const Layout = props => {
         padding: `${rhythm(1.5)} ${rhythm(3 / 4)}`
       }}
     >
+      <Link to="/">Home</Link> |{' '}
+      <a
+        href="https://buttondown.email/devtuts"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Mailing List
+      </a>{' '}
+      | <a href="https://typeofnan.dev">Blog</a> |{' '}
+      <a href="https://youtube.com/c/devtutsco">
+        Tutorial Videos
+      </a>
       <header>{header}</header>
-
       <main ref={headerRef}>{children}</main>
-
+      <button
+        onClick={() => {
+          window.confirm(
+            'Are you sure you want to clear all answers'
+          ) && clearAllPersistedAnswer();
+          window.location.reload();
+        }}
+        className="ui red basic button"
+      >
+        Reset all answers
+      </button>
       <footer style={{ fontSize: '14px' }}>
+        <Divider />
+        <Card fluid>
+          <Card.Content>
+            <Card.Header>
+              <h2 style={{ margin: '20px 0' }}>
+                <i aria-hidden="true" class="mail icon"></i>{' '}
+                Mailing List!
+              </h2>
+            </Card.Header>
+            <Card.Description>
+              If you're learning a lot taking these quizzes,
+              consider signing up for my mailing list, where
+              I send ~weekly tips and lessons on JavaScript
+              right to your inbox!
+            </Card.Description>
+            <form
+              action="https://buttondown.email/api/emails/embed-subscribe/devtuts"
+              method="post"
+              target="popupwindow"
+              onSubmit="window.open('https://buttondown.email/devtuts', 'popupwindow')"
+              className="embeddable-buttondown-form"
+            >
+              <div style={{ margin: '20px 0' }}>
+                <i
+                  aria-hidden="true"
+                  class="check icon"
+                ></i>{' '}
+                Weekly tips
+                <br />
+                <i
+                  aria-hidden="true"
+                  class="check icon"
+                ></i>{' '}
+                No spam
+                <br />
+                <i
+                  aria-hidden="true"
+                  class="check icon"
+                ></i>{' '}
+                Unsubscribe any time
+              </div>
+              <label htmlFor="email">Email Address:</label>
+              <br />
+              <div className="ui icon input">
+                <input
+                  type="email"
+                  name="email"
+                  id="bd-email"
+                  required
+                />
+              </div>
+              <input type="hidden" value="1" name="embed" />
+              <br />
+              <button
+                className="ui green button"
+                style={{ marginLeft: '10px' }}
+              >
+                Subscribe!
+              </button>
+            </form>
+          </Card.Content>
+        </Card>
         <Divider />
         <p>
           <GitHubButton
@@ -141,22 +211,26 @@ const Layout = props => {
           </a>
         </p>
         <div>
-          {contributors.map(
-            ({ login, avatar_url, html_url, id }) => (
-              <a
-                key={id}
-                href={html_url}
-                style={{ boxShadow: 'none' }}
-              >
-                <img
-                  alt={login}
-                  src={avatar_url}
-                  style={{
-                    width: '10%',
-                    margin: '0 10px 10px 0'
-                  }}
-                />
-              </a>
+          {loading ? (
+            <div className="ui basic loading very padding segment"></div>
+          ) : (
+            contributors.map(
+              ({ login, avatar_url, html_url, id }) => (
+                <a
+                  key={id}
+                  href={html_url}
+                  style={{ boxShadow: 'none' }}
+                >
+                  <img
+                    alt={login}
+                    src={avatar_url}
+                    style={{
+                      width: '10%',
+                      margin: '0 10px 10px 0'
+                    }}
+                  />
+                </a>
+              )
             )
           )}
         </div>

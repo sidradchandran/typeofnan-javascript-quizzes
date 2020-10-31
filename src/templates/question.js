@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, graphql } from 'gatsby';
-
+import { ClearAnswerModal } from '../components/modal';
 import Layout from '../components/layout';
 import SEO from '../components/seo';
 import { rhythm } from '../utils/typography';
@@ -43,12 +43,13 @@ const QuestionTemplate = props => {
     }
     return answer;
   });
-
   const clearAnswer = () => {
     setSelectedAnswer(null);
     setSubmittedAnswer(null);
     clearPersistedAnswer(title);
+    return false;
   };
+  const [isOpen, openClear] = useState(false);
 
   useEffect(() => {
     if (selectedAnswer) {
@@ -170,7 +171,9 @@ const QuestionTemplate = props => {
                 <h2>Explanation:</h2>
                 <section
                   dangerouslySetInnerHTML={{
-                    __html: explanationContent
+                    __html:
+                      explanationContent +
+                      `<ul style="padding-left: 30px"><li><strong>Interested in learning more about JavaScript? Consider <a href="https://youtube.com/c/devtutsco" target="_blank" rel="noopener noreferrer">subscribing to my YouTube channel</a> where I teach JavaScript, React, and Typescript!</strong></li></ul>`
                   }}
                 />
               </React.Fragment>
@@ -180,15 +183,18 @@ const QuestionTemplate = props => {
               <React.Fragment>
                 <br />
                 <Button
-                  onClick={() => {
-                    window.confirm(
-                      'Are you sure you want to clear your answer for this question?'
-                    ) && clearAnswer();
-                  }}
                   className="ui red basic button"
+                  onClick={() => openClear(true)}
                 >
                   Clear My answer
                 </Button>
+                <ClearAnswerModal
+                  modalIsOpen={isOpen}
+                  clearAnswer={() =>
+                    openClear(clearAnswer())
+                  }
+                  closeModal={() => openClear(false)}
+                />
               </React.Fragment>
             )}
           </article>
